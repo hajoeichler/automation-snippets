@@ -1,0 +1,45 @@
+#! /bin/bash
+
+hoster="github.com"
+account="hajoeichler"
+
+usage() {
+  echo "$(basename $0) - clones or pulls from a git repository."
+  echo ""
+  echo "Arguments:"
+  echo "-h <hoster> - eg bitbucket.org - '${hoster}' is the default"
+  echo "-a <account> - account name at hoster - '${account}' is the default"
+  echo "-r <repo_name> - name of the repository"
+}
+
+getContent() {
+  if [ -d "${repo}" ]; then
+    cd "${repo}"
+    git pull origin master
+  else
+    git clone git@${hoster}:${account}/${repo}.git
+  fi
+}
+
+set -e
+
+while getopts "h:a:r:" OPT; do
+  case "${OPT}" in
+    h)
+      readonly hoster=${OPTARG}
+      ;;
+    a)
+      readonly account=${OPTARG}
+      ;;
+    r)
+      readonly repo=${OPTARG}
+      ;;
+  esac
+done
+
+if [ -z ${hoster} ] || [ -z ${account} ] || [ -z ${repo} ]; then
+  usage
+  exit 1
+fi
+
+getContent
