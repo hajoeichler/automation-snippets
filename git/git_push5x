@@ -1,0 +1,43 @@
+#! /bin/bash
+
+usage() {
+  echo "$(basename $0) - tries to push 5 times. Doing a pull betwenn each try."
+  echo ""
+  echo "Arguments:"
+  echo "-d - really do it!"
+}
+
+pushFiveTimes() {
+  pushedSuccessful=1
+  for i in {1..5}; do
+    set +e
+    git push "$@"
+    pushedSuccessful=$?
+    set -e
+    if [ "${pushedSuccessful}" -eq "0" ]; then
+      break
+    fi
+    git pull
+  done
+
+  if [ "${pushedSuccessful}" -ne "0" ]; then
+    exit ${pushedSuccessful}
+  fi
+}
+
+set -e
+
+while getopts "d" OPT; do
+  case "${OPT}" in
+    d)
+      readonly DO_IT="true"
+      ;;
+  esac
+done
+
+if [ -z ${DO_IT} ]; then
+  usage
+  exit 1
+fi
+
+pushFiveTimes
